@@ -1,7 +1,28 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLBoolean } from 'graphql';
-import { graphMemberType, graphPostType, graphProfileType, graphRootQueryType, graphsMemberTypeIdEnum, graphUserType } from './graphSchemas.js';
+import {
+  graphql,
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLBoolean,
+} from 'graphql';
+import {
+  graphChangePostInput,
+  graphChangeProfileInput,
+  graphChangeUserInput,
+  graphCreatePostInput,
+  graphCreateProfileInput,
+  graphCreateUserInput,
+  graphMemberType,
+  graphMutationsType,
+  graphPostType,
+  graphProfileType,
+  graphRootQueryType,
+  graphsMemberTypeIdEnum,
+  graphUserType,
+} from './graphSchemas.js';
+import { UUIDType } from './types/uuid.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
@@ -20,7 +41,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: schema,
         source: req.body.query,
         variableValues: req.body.variables,
-        contextValue: fastify
+        contextValue: fastify,
       });
     },
   });
@@ -28,7 +49,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
 const schema = new GraphQLSchema({
   query: graphRootQueryType,
-  types: [graphMemberType, graphsMemberTypeIdEnum, graphUserType, graphPostType, graphProfileType],
+  mutation: graphMutationsType,
+  types: [
+    UUIDType,
+    graphsMemberTypeIdEnum,
+    graphMemberType,
+    graphPostType,
+    graphProfileType,
+    graphUserType,
+    graphChangePostInput,
+    graphChangeProfileInput,
+    graphChangeUserInput,
+    graphCreatePostInput,
+    graphCreateProfileInput,
+    graphCreateUserInput,
+  ],
 });
 
 export default plugin;
