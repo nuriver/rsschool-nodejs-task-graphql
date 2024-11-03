@@ -1,11 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import {
-  graphql,
-  GraphQLSchema,
-  validate,
-  parse,
-} from 'graphql';
+import { graphql, GraphQLSchema, validate, parse } from 'graphql';
 import {
   graphChangePostInput,
   graphChangeProfileInput,
@@ -23,6 +18,12 @@ import {
 } from './graphSchemas.js';
 import { UUIDType } from './types/uuid.js';
 import depthLimit from 'graphql-depth-limit';
+import {
+  createMemberTypeLoader,
+  createPostLoader,
+  createProfileLoader,
+  createUserLoader,
+} from './loaders.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
@@ -48,11 +49,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return;
       }
 
+      const profileLoader = createProfileLoader(prisma);
+      const postLoader = createPostLoader(prisma);
+      const userLoader = createUserLoader(prisma);
+      const memberLoader = createMemberTypeLoader(prisma);
+
       return graphql({
         schema: schema,
         source: req.body.query,
         variableValues: req.body.variables,
-        contextValue: fastify,
+        contextValue: { prisma, profileLoader, postLoader, userLoader, memberLoader },
       });
     },
   });

@@ -67,11 +67,7 @@ export const graphProfileType = new GraphQLObjectType({
     memberType: {
       type: new GraphQLNonNull(graphMemberType),
       resolve: async (_parent, _args, _context) => {
-        return await _context.prisma.memberType.findUnique({
-          where: {
-            id: _parent.memberTypeId,
-          },
-        });
+        return _context.memberLoader.load(_parent.memberTypeId);
       },
     },
   },
@@ -92,21 +88,14 @@ export const graphUserType = new GraphQLObjectType({
     profile: {
       type: graphProfileType,
       resolve: async (_parent, _args, _context) => {
-        return await _context.prisma.profile.findUnique({
-          where: {
-            userId: _parent.id,
-          },
-        });
+         const profiles = await _context.profileLoader.load(_parent.id);
+         return profiles.length ? profiles[0] : null;
       },
     },
     posts: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphPostType))),
       resolve: async (_parent, _args, _context) => {
-        return _context.prisma.post.findMany({
-          where: {
-            authorId: _parent.id,
-          },
-        });
+        return _context.postLoader.load(_parent.id);
       },
     },
     userSubscribedTo: {
@@ -178,11 +167,7 @@ export const graphRootQueryType = new GraphQLObjectType({
         },
       },
       resolve: async (_parent, _args, _context) => {
-        return await _context.prisma.user.findUnique({
-          where: {
-            id: _args.id,
-          },
-        });
+        return _context.userLoader.load(_args.id);
       },
     },
     posts: {
